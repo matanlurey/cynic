@@ -1,0 +1,13 @@
+name: cynic
+description: >
+  Utilities for offline-first development.
+version: 0.1.0
+authors:
+  - Matan Lurey <matanl@google.com>
+homepage: https://github.com/matanlurey/cynic
+
+environment:
+  sdk: ">=1.22.0 <2.0.0"
+
+dev_dependencies:
+  test: # REPLACE_ME
