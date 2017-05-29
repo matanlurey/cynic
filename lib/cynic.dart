@@ -5,7 +5,9 @@
 import 'dart:async';
 import 'dart:io';
 
-final InternetAddress _googleDns = new InternetAddress('8.8.8.8');
+import 'package:meta/meta.dart';
+
+const Service _googleDns = const Service.forIp('8.8.8.8');
 
 /// Returns a future that completes with whether the internet is reachable.
 ///
@@ -14,17 +16,81 @@ final InternetAddress _googleDns = new InternetAddress('8.8.8.8');
 /// **NOTE**: The current implementation attempts to connect to the Google DNS
 /// servers as proof of internet connectivity. You will need to implement custom
 /// functionality for an intranet.
-Future<bool> isOnline({Duration timeout}) async {
-  try {
-    var result = _googleDns.reverse();
-    if (timeout != null) {
-      result = result.timeout(timeout);
+Future<bool> isOnline({Duration timeout}) {
+  return _googleDns.isOnline(timeout: timeout);
+}
+
+/// Returns a future that completes with whether the internet is not reachable.
+///
+/// See [isOnline] for full documentation.
+Future<bool> isOffline({Duration timeout}) async {
+  return _googleDns.isOffline(timeout: timeout);
+}
+
+/// Platform-agnostic indication of a remote service being online or offline.
+abstract class Service {
+  /// Returns a future that completes if all [services] are online.
+  static Future<bool> allOnline(
+    Iterable<Service> services, {
+    Duration timeout,
+  }) async =>
+      !(await Future.any(services.map((s) => s.isOffline(timeout: timeout))));
+
+  @visibleForOverriding
+  const Service();
+
+  /// Returns a service monitor for an [ipAddress].
+  const factory Service.forIp(
+    String ipAddress, {
+    String name,
+    Duration timeout,
+  }) = _InternetAddressService;
+
+  /// Name of the service.
+  String get name;
+
+  /// Returns a future that completes with whether this service is reachable.
+  ///
+  /// You may specify a [timeout] to complete with `false` regardless.
+  Future<bool> isOnline({Duration timeout});
+
+  /// Returns a future that completes with whether this service not reachable.
+  ///
+  /// See [Service.isOnline] for full documentation.
+  Future<bool> isOffline({Duration timeout}) async {
+    return !(await isOnline(timeout: timeout));
+  }
+}
+
+class _InternetAddressService extends Service {
+  final String _ipAddress;
+  final Duration timeout;
+
+  @override
+  final String name;
+
+  const _InternetAddressService(
+    String ipAddress, {
+    this.timeout,
+    String name,
+  })
+      : _ipAddress = ipAddress,
+        this.name = name ?? ipAddress;
+
+  @override
+  Future<bool> isOnline({Duration timeout}) async {
+    timeout ??= this.timeout;
+    try {
+      var result = new InternetAddress(_ipAddress).reverse();
+      if (timeout != null) {
+        result = result.timeout(timeout);
+      }
+      await result;
+      return true;
+    } on SocketException catch (_) {
+      return false;
+    } on TimeoutException catch (_) {
+      return false;
     }
-    await result;
-    return true;
-  } on SocketException catch (_) {
-    return false;
-  } on TimeoutException catch (_) {
-    return false;
   }
 }
