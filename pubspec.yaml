@@ -1,7 +1,7 @@
 name: cynic
 description: >
   Utilities for offline-first development.
-version: 0.1.0
+version: 0.1.1
 authors:
   - Matan Lurey <matanl@google.com>
 homepage: https://github.com/matanlurey/cynic
