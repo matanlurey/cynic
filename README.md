@@ -16,7 +16,7 @@ _This library works in [Flutter][] and the standalone [Dart VM][]._
 
 ```
 dependencies:
-  cynic: ^0.1.1
+  cynic: ^0.1.2
 ```
 
 ### Determine online status
