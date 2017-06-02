@@ -7,7 +7,6 @@ import 'dart:io';
 
 import 'package:meta/meta.dart';
 
-const Service _googleDns = const Service.forIp('8.8.8.8');
 
 /// Returns a future that completes with whether the internet is reachable.
 ///
@@ -17,30 +16,33 @@ const Service _googleDns = const Service.forIp('8.8.8.8');
 /// servers as proof of internet connectivity. You will need to implement custom
 /// functionality for an intranet.
 Future<bool> isOnline({Duration timeout}) {
-  return _googleDns.isOnline(timeout: timeout);
+  return Reachable.googleDns.isOnline(timeout: timeout);
 }
 
 /// Returns a future that completes with whether the internet is not reachable.
 ///
 /// See [isOnline] for full documentation.
 Future<bool> isOffline({Duration timeout}) async {
-  return _googleDns.isOffline(timeout: timeout);
+  return Reachable.googleDns.isOffline(timeout: timeout);
 }
 
 /// Platform-agnostic indication of a remote service being online or offline.
-abstract class Service {
+abstract class Reachable {
+
+  static const Reachable googleDns = const Reachable.ip('8.8.8.8');
+
   /// Returns a future that completes if all [services] are online.
   static Future<bool> allOnline(
-    Iterable<Service> services, {
+    Iterable<Reachable> services, {
     Duration timeout,
   }) async =>
       !(await Future.any(services.map((s) => s.isOffline(timeout: timeout))));
 
   @visibleForOverriding
-  const Service();
+  const Reachable();
 
   /// Returns a service monitor for an [ipAddress].
-  const factory Service.forIp(
+  const factory Reachable.ip(
     String ipAddress, {
     String name,
     Duration timeout,
@@ -56,13 +58,13 @@ abstract class Service {
 
   /// Returns a future that completes with whether this service not reachable.
   ///
-  /// See [Service.isOnline] for full documentation.
+  /// See [Reachable.isOnline] for full documentation.
   Future<bool> isOffline({Duration timeout}) async {
     return !(await isOnline(timeout: timeout));
   }
 }
 
-class _InternetAddressService extends Service {
+class _InternetAddressService extends Reachable {
   final String _ipAddress;
   final Duration timeout;
 

@@ -29,16 +29,16 @@ main() async {
 }
 ```
 
-### Create and monitor a list of services
+### Create and monitor a list of Reachables
 
 ```dart
 final servers = const [
-  const Service.ipAddress('256.257.258.1', name: 'Server A'),
-  const Service.ipAddress('256.257.258.2', name: 'Server B'),
-  const Service.ipAddress('256.257.258.3', name: 'Server C'),
+  const Reachable.ip('256.257.258.1', name: 'Server A'),
+  const Reachable.ip('256.257.258.2', name: 'Server B'),
+  const Reachable.ip('256.257.258.3', name: 'Server C'),
 ];
 
 main() async {
-  print(await Service.allOnline(servers));
+  print(await Reachable.allOnline(servers));
 }
 ```
