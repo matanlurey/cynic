@@ -8,7 +8,5 @@ final servers = const [
 main() async {
   var online = await Reachable.allOnline(servers);
   if (online)
-    print('Alive');
-
-  return online;
+    print('Connected');
 }
