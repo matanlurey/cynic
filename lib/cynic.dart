@@ -32,18 +32,34 @@ abstract class Reachable {
   static const Reachable googleDns = const Reachable.ip('8.8.8.8');
 
   /// Returns a future that completes if all [services] are online.
-  static Future<bool> allOnline(
-    Iterable<Reachable> services, {
+  static Future<bool> anyOnline(Iterable<Reachable> services, {
     Duration timeout,
-  }) async =>
-      !(await Future.any(services.map((s) => s.isOffline(timeout: timeout))));
+  }) async {
+    final List<bool> executions = await Future.wait(
+        services.map((s) => s.isOnline(timeout: timeout)));
+    final status = executions.fold<bool>(
+        false, (previous, candidat) => previous || candidat);
+
+    return status;
+  }
+
+  static Future<bool> allOnline(Iterable<Reachable> services, {
+    Duration timeout,
+  }) async {
+    final List<bool> executions = await Future.wait(
+        services.map((s) => s.isOnline(timeout: timeout)));
+    final status = executions.fold<bool>(
+        true, (previous, candidat) => previous && candidat);
+
+    return status;
+  }
+
 
   @visibleForOverriding
   const Reachable();
 
   /// Returns a service monitor for an [ipAddress].
-  const factory Reachable.ip(
-    String ipAddress, {
+  const factory Reachable.ip(String ipAddress, {
     String name,
     Duration timeout,
   }) = _InternetAddressService;
@@ -71,8 +87,7 @@ class _InternetAddressService extends Reachable {
   @override
   final String name;
 
-  const _InternetAddressService(
-    String ipAddress, {
+  const _InternetAddressService(String ipAddress, {
     this.timeout,
     String name,
   })

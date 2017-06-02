@@ -16,7 +16,7 @@ _This library works in [Flutter][] and the standalone [Dart VM][]._
 
 ```
 dependencies:
-  cynic: ^0.1.2
+  cynic: ^0.1.4
 ```
 
 ### Determine online status
@@ -24,28 +24,34 @@ dependencies:
 ```dart
 import 'package:cynic/cynic.dart';
 
-final servers = const [
-  Reachable.googleDns,
-  const Reachable.ip('192.168.1.67', name: 'Server A'),
-];
-
 main() async {
-  var online = await Reachable.allOnline(servers);
-  if (online)
-    print('Connected');
+  print('Connected: ${await isOnline()}');
 }
 ```
 
 ### Create and monitor a list of Reachables
 
 ```dart
-final servers = const [
-  const Reachable.ip('256.257.258.1', name: 'Server A'),
-  const Reachable.ip('256.257.258.2', name: 'Server B'),
-  const Reachable.ip('256.257.258.3', name: 'Server C'),
+import 'package:cynic/cynic.dart';
+
+final microservices = const [
+  Reachable.googleDns,
+  Reachable.googleDns,
+];
+
+final mirrors = const [
+  Reachable.googleDns,
+  const Reachable.ip('1.1.1.2', name: 'Server A'),
 ];
 
 main() async {
-  print(await Reachable.allOnline(servers));
+
+  var all = await Reachable.allOnline(microservices);
+  if (all) print('All servers are online');
+
+  var any = await Reachable.anyOnline(mirrors);
+  if (any) print('At least one server is online');
+
+
 }
 ```

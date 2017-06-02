@@ -1,12 +1,22 @@
 import 'package:cynic/cynic.dart';
 
-final servers = const [
+final microservices = const [
   Reachable.googleDns,
-  const Reachable.ip('192.168.1.67', name: 'Server A'),
+  Reachable.googleDns,
+];
+
+final mirrors = const [
+  Reachable.googleDns,
+  const Reachable.ip('1.1.1.2', name: 'Server A'),
 ];
 
 main() async {
-  var online = await Reachable.allOnline(servers);
-  if (online)
-    print('Connected');
+
+  var all = await Reachable.allOnline(microservices);
+  if (all) print('All servers are online');
+
+  var any = await Reachable.anyOnline(mirrors);
+  if (any) print('At least one server is online');
+
+
 }

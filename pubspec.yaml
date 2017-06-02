@@ -1,7 +1,7 @@
 name: cynic
 description: >
   Utilities for offline-first development.
-version: 0.1.2
+version: 0.1.4
 authors:
   - Matan Lurey <matanl@google.com>
   - Robert Felker <felker.robert@gmail.com>
