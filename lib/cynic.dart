@@ -29,29 +29,36 @@ Future<bool> isOffline({Duration timeout}) async {
 /// Platform-agnostic indication of a remote service being online or offline.
 abstract class Reachable {
 
+  /// Preconfigured Google DNS is a good candidat to test online status
   static const Reachable googleDns = const Reachable.ip('8.8.8.8');
 
-  /// Returns a future that completes if all [services] are online.
-  static Future<bool> anyOnline(Iterable<Reachable> services, {
+  /// A future that is true if any [services] is online.
+  static Future<bool> any(Iterable<Reachable> services, {
     Duration timeout,
   }) async {
-    final List<bool> executions = await Future.wait(
-        services.map((s) => s.isOnline(timeout: timeout)));
-    final status = executions.fold<bool>(
-        false, (previous, candidat) => previous || candidat);
-
-    return status;
+    final completer = new Completer<bool>();
+    void _maybeComplete(bool isOnline) {
+      if (isOnline && !completer.isCompleted) {
+        completer.complete(true);
+      }
+    }
+    final futures = services.map((s) => s.isOnline(timeout: timeout));
+    for (final future in futures) {
+      future.then(_maybeComplete);
+    }
+    Future.wait(futures).then((all) {
+      completer.complete(false);
+    });
+    return completer.future;
   }
 
-  static Future<bool> allOnline(Iterable<Reachable> services, {
+  /// A future that is true if all [services] are online.
+  static Future<bool> all(Iterable<Reachable> services, {
     Duration timeout,
   }) async {
-    final List<bool> executions = await Future.wait(
-        services.map((s) => s.isOnline(timeout: timeout)));
-    final status = executions.fold<bool>(
-        true, (previous, candidat) => previous && candidat);
-
-    return status;
+    return Future.wait(services.map((s) =>
+        s.isOnline(timeout: timeout))).then((status) =>
+        status.every((online) => online));
   }
 
 
@@ -62,7 +69,7 @@ abstract class Reachable {
   const factory Reachable.ip(String ipAddress, {
     String name,
     Duration timeout,
-  }) = _InternetAddressService;
+  }) = _ReachableIp;
 
   /// Name of the service.
   String get name;
@@ -80,14 +87,14 @@ abstract class Reachable {
   }
 }
 
-class _InternetAddressService extends Reachable {
+class _ReachableIp extends Reachable {
   final String _ipAddress;
   final Duration timeout;
 
   @override
   final String name;
 
-  const _InternetAddressService(String ipAddress, {
+  const _ReachableIp(String ipAddress, {
     this.timeout,
     String name,
   })
