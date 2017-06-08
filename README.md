@@ -5,7 +5,7 @@ Utilities for offline-first development.
 **Warning**: This is not an official Google or Dart project.
 
 * [Usage](#usage)
-  * [Determine online status](#determine-online-status)
+* [Determine online status](#determine-online-status)
 
 ## Usage
 
@@ -16,7 +16,7 @@ _This library works in [Flutter][] and the standalone [Dart VM][]._
 
 ```
 dependencies:
-  cynic: ^0.1.1
+  cynic: ^0.2.0
 ```
 
 ### Determine online status
@@ -29,16 +29,30 @@ main() async {
 }
 ```
 
-### Create and monitor a list of services
+### Create and monitor a list of reachable services
 
 ```dart
-final servers = const [
-  const Service.ipAddress('256.257.258.1', name: 'Server A'),
-  const Service.ipAddress('256.257.258.2', name: 'Server B'),
-  const Service.ipAddress('256.257.258.3', name: 'Server C'),
+import 'package:cynic/cynic.dart';
+
+final microServices = const [
+  Reachable.googleDns, // 99.9% uptime helper
+  const Reachable.ip('172.217.19.227', name: 'My API Server'),
+];
+
+final mirrors = const [
+  const Reachable.ip('216.58.204.131', name: 'My CDN A'),
+  const Reachable.ip('5.5.5.5', name: 'My CDN B'), // not online
 ];
 
 main() async {
-  print(await Service.allOnline(servers));
+
+  var all = await Reachable.all(microServices);
+  if (all)
+    print('All servers are online');
+
+  var any = await Reachable.any(mirrors);
+  if (any)
+    print('At least one server is online');
+
 }
 ```
