@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cynic/cynic.dart';
 
 final microServices = const [
@@ -10,14 +12,13 @@ final mirrors = const [
   const Reachable.ip('5.5.5.5', name: 'My CDN B'), // not online
 ];
 
-main() async {
-
-  var all = await Reachable.all(microServices);
-  if (all)
+Future<Null> main() async {
+  final all = await Reachable.all(microServices);
+  if (all) {
     print('All servers are online');
-
-  var any = await Reachable.any(mirrors);
-  if (any)
+  }
+  final any = await Reachable.any(mirrors);
+  if (any) {
     print('At least one server is online');
-
+  }
 }
