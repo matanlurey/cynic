@@ -1,3 +1,9 @@
+## 0.2.0
+
+- Rename `Service` to `Reachable`.
+- Expose the default service as `Reachable.googleDns`.
+- Added `Reachable.any|all`.
+
 ## 0.1.1
 
 - Added a `Service` class, that represents something online or offline:
